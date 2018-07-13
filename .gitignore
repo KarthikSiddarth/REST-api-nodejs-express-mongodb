@@ -1,1 +1,4 @@
 node_modules
+notes.txt
+package-lock.json
+nodemon.json
