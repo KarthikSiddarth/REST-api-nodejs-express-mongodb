@@ -8,6 +8,7 @@ const productRoutes = require('./api/routes/products')
 const orderRoutes = require('./api/routes/orders')
 
 mongoose.connect('mongodb://localhost:27017/rest-node-express-mongo')
+mongoose.promise = global.promise
 
 app.use(morgan('dev'))
 app.use(bodyParser.urlencoded({extended: false}))
