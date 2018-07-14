@@ -8,8 +8,22 @@ router.get('/', (req, res, next) => {
   Product.find()
     .exec()
     .then((result) => {
+      const response = {
+        count: result.length,
+        product: result.map((doc) => {
+          return {
+            name: doc.name,
+            price: doc.price,
+            _id: doc._id,
+            request: {
+              type: 'GET',
+              url: 'http://localhost:3000/products/'
+            }
+          }
+        })
+      }
       if (result.length > 0) {
-        res.status(200).json(result)
+        res.status(200).json(response)
       } else {
         res.status(400).json({ message: 'no entries found' })
       }
@@ -29,11 +43,11 @@ router.post('/', (req, res, next) => {
     res.status(201).json({
       message: 'Handling POST requests to /products',
       createdProduct: product })
-      .catch(err => {
-        res.status(500).json({
-          err })
-      })
   })
+    .catch(err => {
+      res.status(500).json({
+        error: err })
+    })
 })
 
 router.get('/:productId', (req, res, next) => {
@@ -41,8 +55,18 @@ router.get('/:productId', (req, res, next) => {
   Product.findById(id)
     .exec()
     .then((doc) => {
+      const response = {
+        name: doc.name,
+        price: doc.price,
+        _id: doc._id,
+        request: {
+          message: 'to get all products, visit the list',
+          type: 'GET',
+          url: 'http://localhost:3000/products'
+        }
+      }
       if (doc) {
-        res.status(200).json(doc)
+        res.status(200).json(response)
       } else {
         res.status(404).json({message: 'not found'})
       }
@@ -52,11 +76,12 @@ router.get('/:productId', (req, res, next) => {
 
 router.patch('/:productId', (req, res, next) => {
   const id = req.params.productId
-  Product.update({_id: id}, { $set: {
-    name: req.params.newName,
-    price: req.params.newPrice
+  const updateOps = {}
+  for (const ops of req.body) {
+    updateOps[ops.propName] = ops.value
   }
-  })
+  console.log(updateOps)
+  Product.findByIdAndUpdate({_id: id}, { $set: updateOps }, { new: true })
     .exec()
     .then((result) => {
       res.status(200).json(result)
